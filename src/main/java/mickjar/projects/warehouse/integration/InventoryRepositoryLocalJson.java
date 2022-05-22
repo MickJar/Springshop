@@ -13,13 +13,16 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class InventoryRepository {
 
-    private List<ProductDto> products;
+    private final List<ProductDto> products;
 
-    private List<ArticleDto> articles;
+    private final Map<Long, ArticleDto> articleIndex;
 
     public InventoryRepository() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -31,7 +34,9 @@ public class InventoryRepository {
         var articlesPath = ResourceUtils.getFile("classpath:data/inventory.json").getPath();
         var articlesFile = new File(articlesPath);
         JsonNode articlesnode = objectMapper.readTree(articlesFile);
-        this.articles = objectMapper.convertValue(articlesnode.get("inventory"),  new TypeReference<List<ArticleDto>>(){});
+        var articles = objectMapper.convertValue(articlesnode.get("inventory"),  new TypeReference<List<ArticleDto>>(){});
+        this.articleIndex = articles.stream()
+                .collect(Collectors.toMap(ArticleDto::art_id, Function.identity()));
     }
 
     public List<ProductDto> GetProducts() {
@@ -42,7 +47,28 @@ public class InventoryRepository {
         return new ProductDto(name, List.of());
     }
 
-    public boolean RemoveArticle(Article article, int i) throws IllegalStateException {
-        throw new IllegalStateException("Not enough articles" + article.id());
+    public int getInventoryStock(long art_id) {
+        var articleStock= this.articleIndex.get(art_id);
+        if (articleStock != null) {
+            return articleStock.stock();
+        }
+        return 0;
+    }
+
+    public boolean RemoveArticle(long art_id, int amount) {
+        var articleInventory = this.articleIndex.get(art_id);
+        if (articleInventory != null) {
+            if(articleInventory.sellInventory(amount)) {
+                return true;
+            }
+            return false;
+        }
+        throw new IllegalArgumentException("No article with that id");
+    }
+
+    public List<ArticleInventory> getInventoryStock() {
+        return articleIndex.entrySet().stream()
+                .map(longArticleInventoryEntry -> longArticleInventoryEntry.getValue())
+                .collect(Collectors.toList());
     }
 }
