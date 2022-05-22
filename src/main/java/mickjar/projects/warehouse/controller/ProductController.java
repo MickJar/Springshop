@@ -31,6 +31,6 @@ public class ProductController {
     @GetMapping(value = "{name}/sell")
     public ResponseEntity<Object> SellProduct(String name) {
         boolean success = inventoryBusiness.SellProduct(name);
-        return success ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        return success ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body("Not enough inventory");
     }
 }

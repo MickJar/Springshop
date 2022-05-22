@@ -4,6 +4,7 @@ import mickjar.projects.warehouse.business.model.Article;
 import mickjar.projects.warehouse.business.model.Product;
 import mickjar.projects.warehouse.integration.InventoryRepository;
 import mickjar.projects.warehouse.integration.model.ArticleDefinitionDto;
+import mickjar.projects.warehouse.integration.model.ArticleInventory;
 import mickjar.projects.warehouse.integration.model.ProductDto;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +33,37 @@ public class InventoryBusiness {
         return new Article(articleDefinitionDto.art_id(), articleDefinitionDto.amount_of());
     }
 
+    private Article mapArticle(ArticleInventory articleInventory) {
+        return new Article(articleInventory.art_id(), articleInventory.getStock());
+    }
+
     public boolean SellProduct(String name) {
-        var product = inventoryRepository.GetProduct(name);
+        var productDefinition = inventoryRepository.GetProduct(name);
+        if (productDefinition.isPresent()) {
+            var product = mapProduct(productDefinition.get());
 
-        for (var article : product.articles()) {
-            inventoryRepository.RemoveArticle(article, 0);
+            for (var article : product.articles()) {
+                var stock = inventoryRepository.getInventoryStock(article.id());
+                if (stock < article.amount()) {
+                    return false;
+                }
+            }
+
+            for (var article : product.articles()) {
+                var success = inventoryRepository.RemoveArticle(article.id(), article.amount());
+                if (!success) {
+                    // This is where there is need for rollback in the transaction
+                    return false;
+                }
+            }
+
+            return true;
         }
+        return false;
+    }
 
-        return true;
+    public List<Article> GetStock() {
+        var articleInventory = inventoryRepository.getInventoryStock();
+        return articleInventory.stream().map(this::mapArticle).collect(Collectors.toList());
     }
 }

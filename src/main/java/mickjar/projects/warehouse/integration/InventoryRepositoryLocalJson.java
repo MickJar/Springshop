@@ -3,48 +3,54 @@ package mickjar.projects.warehouse.integration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import mickjar.projects.warehouse.business.model.Article;
-import mickjar.projects.warehouse.business.model.Product;
-import mickjar.projects.warehouse.integration.model.ArticleDto;
+import mickjar.projects.warehouse.integration.model.ArticleInventory;
 import mickjar.projects.warehouse.integration.model.ProductDto;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class InventoryRepository {
+public class InventoryRepositoryLocalJson implements InventoryRepository {
 
+    public static final String CLASSPATH_DATA_PRODUCTS_JSON = "classpath:data/products.json";
+    public static final String CLASSPATH_DATA_INVENTORY_JSON = "classpath:data/inventory.json";
     private final List<ProductDto> products;
 
-    private final Map<Long, ArticleDto> articleIndex;
+    private final Map<Long, ArticleInventory> articleIndex;
 
-    public InventoryRepository() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        var productsPath = ResourceUtils.getFile("classpath:data/products.json").getPath();
-        var productFile = new File(productsPath);
-        JsonNode productNode = objectMapper.readTree(productFile);
-        this.products = objectMapper.convertValue(productNode.get("products"),  new TypeReference<List<ProductDto>>(){});
-
-        var articlesPath = ResourceUtils.getFile("classpath:data/inventory.json").getPath();
-        var articlesFile = new File(articlesPath);
-        JsonNode articlesnode = objectMapper.readTree(articlesFile);
-        var articles = objectMapper.convertValue(articlesnode.get("inventory"),  new TypeReference<List<ArticleDto>>(){});
+    public InventoryRepositoryLocalJson() throws IOException {
+        products = loadObjects(CLASSPATH_DATA_PRODUCTS_JSON, "products", ProductDto.class);
+        List<ArticleInventory> articles = loadObjects(CLASSPATH_DATA_INVENTORY_JSON, "inventory", ArticleInventory.class);
         this.articleIndex = articles.stream()
-                .collect(Collectors.toMap(ArticleDto::art_id, Function.identity()));
+                .collect(Collectors.toMap(ArticleInventory::art_id, Function.identity()));
+    }
+
+    private <T> List<T> loadObjects(String path, String topNode, Class<T> elementClass) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        var productsPath = ResourceUtils.getFile(path).getPath();
+        var productFile = new File(productsPath);
+        JsonNode node = objectMapper.readTree(productFile);
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, elementClass);
+        return objectMapper.convertValue(node.get(topNode), listType);
+
     }
 
     public List<ProductDto> GetProducts() {
         return products;
     }
 
-    public ProductDto GetProduct(String name) {
-        return new ProductDto(name, List.of());
+    public Optional<ProductDto> GetProduct(String name) {
+        return products.stream().filter(productDto -> productDto.name().equals(name)).findFirst();
     }
 
     public int getInventoryStock(long art_id) {
