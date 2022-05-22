@@ -19,6 +19,10 @@ public class InventoryBusiness {
         this.inventoryRepository = inventoryRepository;
     }
 
+    /**
+     * Get all the available product definitions
+     * @return product definitions
+     */
     public List<Product> GetProducts() {
         var inventoryProducts = inventoryRepository.GetProducts();
         return inventoryProducts.stream().map(this::mapProduct).collect(Collectors.toList());
@@ -37,6 +41,13 @@ public class InventoryBusiness {
         return new Article(articleInventory.art_id(), articleInventory.getStock());
     }
 
+    /**
+     * Attempt to sell a product if there is enough stock in the inventory
+     * TODO - Implement lock in order to prevent selling orders concurrently.
+     *
+     * @param name The name of the product to sell
+     * @return true if the product sold successfully and false if not
+     */
     public boolean SellProduct(String name) {
         var productDefinition = inventoryRepository.GetProduct(name);
         if (productDefinition.isPresent()) {
@@ -62,6 +73,9 @@ public class InventoryBusiness {
         return false;
     }
 
+    /**
+     * @return A list of the available articles and the current stock
+     */
     public List<Article> GetStock() {
         var articleInventory = inventoryRepository.getInventoryStock();
         return articleInventory.stream().map(this::mapArticle).collect(Collectors.toList());
