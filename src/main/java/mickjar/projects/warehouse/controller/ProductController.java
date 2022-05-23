@@ -20,8 +20,8 @@ public class ProductController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Product>> GetAllProducts() {
-        var products = inventoryBusiness.GetProducts();
+    public ResponseEntity<List<Product>> getAllProducts() {
+        var products = inventoryBusiness.getProducts();
         if (products.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -29,8 +29,8 @@ public class ProductController {
     }
 
     @GetMapping(value = "{name}/sell")
-    public ResponseEntity<Object> SellProduct(String name) {
-        boolean success = inventoryBusiness.SellProduct(name);
+    public ResponseEntity<Object> sellProduct(String name) {
+        boolean success = inventoryBusiness.sellProduct(name);
         return success ? ResponseEntity.ok().build() : ResponseEntity.badRequest().body("Not enough inventory");
     }
 }

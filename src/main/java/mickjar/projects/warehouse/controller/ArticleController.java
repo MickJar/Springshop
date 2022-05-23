@@ -19,8 +19,8 @@ public class ArticleController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Article>> GetAllProducts() {
-        var stock = inventoryBusiness.GetStock();
+    public ResponseEntity<List<Article>> getAllProducts() {
+        var stock = inventoryBusiness.getStock();
         if (stock.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

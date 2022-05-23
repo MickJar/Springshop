@@ -10,7 +10,7 @@ public interface InventoryRepository {
     /**
      * @return All available products definitions
      */
-    List<ProductDto> GetProducts();
+    List<ProductDto> getProducts();
 
     /**
      * @param art_id The Article ID
@@ -23,13 +23,13 @@ public interface InventoryRepository {
      * @param amount the amount of stock to remove
      * @return true if there was enough stock, otherwise false
      */
-    boolean RemoveArticle(long art_id, int amount);
+    boolean removeArticle(long art_id, int amount);
 
     /**
      * @param name Name of the product to fetch
      * @return an Optional of the product - empty if not found.
      */
-    Optional<ProductDto> GetProduct(String name);
+    Optional<ProductDto> getProduct(String name);
 
     /**
      * @return A list with the available inventory

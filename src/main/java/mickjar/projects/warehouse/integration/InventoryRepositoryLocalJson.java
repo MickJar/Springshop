@@ -43,11 +43,11 @@ public class InventoryRepositoryLocalJson implements InventoryRepository {
 
     }
 
-    public List<ProductDto> GetProducts() {
+    public List<ProductDto> getProducts() {
         return products;
     }
 
-    public Optional<ProductDto> GetProduct(String name) {
+    public Optional<ProductDto> getProduct(String name) {
         return products.stream().filter(productDto -> productDto.name().equals(name)).findFirst();
     }
 
@@ -59,7 +59,7 @@ public class InventoryRepositoryLocalJson implements InventoryRepository {
         return 0;
     }
 
-    public boolean RemoveArticle(long art_id, int amount) {
+    public boolean removeArticle(long art_id, int amount) {
         var articleInventory = this.articleIndex.get(art_id);
         if (articleInventory != null) {
             return articleInventory.sellInventory(amount);

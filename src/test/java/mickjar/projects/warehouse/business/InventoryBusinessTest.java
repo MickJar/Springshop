@@ -37,13 +37,13 @@ public class InventoryBusinessTest {
         var expectedArticles = List.of(new Article(1, 666));
         var expectedProduct = new Product("testProduct", expectedArticles);
 
-        doReturn(List.of(productDto)).when(repositoryMock).GetProducts();
+        doReturn(List.of(productDto)).when(repositoryMock).getProducts();
 
         // Act
-        var product = inventoryBusiness.GetProducts();
+        var product = inventoryBusiness.getProducts();
 
         // Assert
-        verify(repositoryMock).GetProducts();
+        verify(repositoryMock).getProducts();
 
         assertAll(
                 () -> assertNotNull(product),
@@ -67,21 +67,21 @@ public class InventoryBusinessTest {
         var articlesDto = List.of(new ArticleDefinitionDto(1, desiredStock));
         var productDto = new ProductDto("testProduct", articlesDto);
 
-        doReturn(Optional.of(productDto)).when(repositoryMock).GetProduct("testProduct");
+        doReturn(Optional.of(productDto)).when(repositoryMock).getProduct("testProduct");
         doReturn(existingStock).when(repositoryMock).getInventoryStock(1);
 
         if (expectedSuccess) {
-            doReturn(true).when(repositoryMock).RemoveArticle(1, desiredStock);
+            doReturn(true).when(repositoryMock).removeArticle(1, desiredStock);
         }
 
         // Act
-        var success = inventoryBusiness.SellProduct("testProduct");
+        var success = inventoryBusiness.sellProduct("testProduct");
 
         // Assert
-        verify(repositoryMock).GetProduct("testProduct");
+        verify(repositoryMock).getProduct("testProduct");
         verify(repositoryMock).getInventoryStock(1);
         if (expectedSuccess) {
-            verify(repositoryMock).RemoveArticle(1, desiredStock);
+            verify(repositoryMock).removeArticle(1, desiredStock);
         }
 
         assertEquals(expectedSuccess, success, "It should have been possible to sell product that exists in inventory");
@@ -97,7 +97,7 @@ public class InventoryBusinessTest {
         var expectedInventory = List.of(new Article(1, 1));
 
         // Act
-        var articles = inventoryBusiness.GetStock();
+        var articles = inventoryBusiness.getStock();
 
         // Assert
         verify(repositoryMock).getInventoryStock();

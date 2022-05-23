@@ -23,8 +23,8 @@ public class InventoryBusiness {
      * Get all the available product definitions
      * @return product definitions
      */
-    public List<Product> GetProducts() {
-        var inventoryProducts = inventoryRepository.GetProducts();
+    public List<Product> getProducts() {
+        var inventoryProducts = inventoryRepository.getProducts();
         return inventoryProducts.stream().map(this::mapProduct).collect(Collectors.toList());
     }
 
@@ -48,8 +48,8 @@ public class InventoryBusiness {
      * @param name The name of the product to sell
      * @return true if the product sold successfully and false if not
      */
-    public boolean SellProduct(String name) {
-        var productDefinition = inventoryRepository.GetProduct(name);
+    public boolean sellProduct(String name) {
+        var productDefinition = inventoryRepository.getProduct(name);
         if (productDefinition.isPresent()) {
             var product = mapProduct(productDefinition.get());
 
@@ -61,7 +61,7 @@ public class InventoryBusiness {
             }
 
             for (var article : product.articles()) {
-                var success = inventoryRepository.RemoveArticle(article.id(), article.amount());
+                var success = inventoryRepository.removeArticle(article.id(), article.amount());
                 if (!success) {
                     // This is where there is need for rollback in the transaction
                     return false;
@@ -76,7 +76,7 @@ public class InventoryBusiness {
     /**
      * @return A list of the available articles and the current stock
      */
-    public List<Article> GetStock() {
+    public List<Article> getStock() {
         var articleInventory = inventoryRepository.getInventoryStock();
         return articleInventory.stream().map(this::mapArticle).collect(Collectors.toList());
     }
