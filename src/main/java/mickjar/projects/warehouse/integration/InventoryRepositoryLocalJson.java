@@ -1,10 +1,8 @@
 package mickjar.projects.warehouse.integration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import mickjar.projects.warehouse.business.model.Article;
 import mickjar.projects.warehouse.integration.model.ArticleInventory;
 import mickjar.projects.warehouse.integration.model.ProductDto;
 import org.springframework.stereotype.Service;
@@ -64,17 +62,12 @@ public class InventoryRepositoryLocalJson implements InventoryRepository {
     public boolean RemoveArticle(long art_id, int amount) {
         var articleInventory = this.articleIndex.get(art_id);
         if (articleInventory != null) {
-            if(articleInventory.sellInventory(amount)) {
-                return true;
-            }
-            return false;
+            return articleInventory.sellInventory(amount);
         }
         throw new IllegalArgumentException("No article with that id");
     }
 
     public List<ArticleInventory> getInventoryStock() {
-        return articleIndex.entrySet().stream()
-                .map(longArticleInventoryEntry -> longArticleInventoryEntry.getValue())
-                .collect(Collectors.toList());
+        return new ArrayList<>(articleIndex.values());
     }
 }
